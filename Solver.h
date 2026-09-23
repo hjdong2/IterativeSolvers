@@ -125,3 +125,8 @@ inline SolverResult GaussSeidel(const std::vector<std::vector<double>>& A, const
 
         return info;
 }
+
+inline SolverResult GMRES(const std::vector<std::vector<double>>& A, const std::vector<double>& b, 
+    std::vector<double>& x, const SolverOptions& opts) {
+
+}
