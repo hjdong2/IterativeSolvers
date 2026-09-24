@@ -128,5 +128,6 @@ inline SolverResult GaussSeidel(const std::vector<std::vector<double>>& A, const
 
 inline SolverResult GMRES(const std::vector<std::vector<double>>& A, const std::vector<double>& b, 
     std::vector<double>& x, const SolverOptions& opts) {
-
+    // need to think about this agian, Km subspace and Hessenberg matrix
+    // QR factorization ? Given rotations? Restart?
 }
