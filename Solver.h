@@ -1,9 +1,10 @@
-
 #pragma once
 #include <iostream>
 #include <cmath>
 #include <vector>
 #include <numeric>
+#include <algorithm>
+#include <functional>
 
 struct SolverOptions{
     double reltol=1e-8;
@@ -31,6 +32,63 @@ inline double resNrm(const std::vector<std::vector<double>>& A, const std::vecto
 
     return std::sqrt(std::inner_product(r.begin(), r.end(), r.begin(), 0.0));
 
+}
+
+inline double vecNrm(const std::vector<double>& v) {
+    return std::sqrt(std::inner_product(v.begin(), v.end(), v.begin(), 0.0));
+}
+
+std::vector<double> mulMatrixVector(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec) {
+    int rows = matrix.size(), cols = matrix[0].size();
+    int xsz = vec.size();
+    if (cols != xsz) {
+        std::cerr << "Matrix column size and vector size mismatch!\n"; 
+    }
+
+    std::vector<double> b(rows, 0.0);
+    for (int row = 0; row < rows; ++row) {
+        double num = 0.0;
+        for (int col = 0; col < cols; ++col) {
+            num += matrix[row][col] * vec[col];
+        }
+        b[row] = num;
+    }
+
+    return b;
+}
+
+inline std::vector<std::vector<double>> Aronoldi(const std::vector<std::vector<double>>& A, std::vector<double>& v, const int& m) {
+        std::vector<std::vector<double>> H_bar(m + 1, std::vector<double>(m, 0.0));
+        int rows = A.size(), cols = A[0].size();
+        std::vector<std::vector<double>>  Vmp1(cols, std::vector<double>(m, 0.0));
+        if (abs(vecNrm(v) - 1.0) > 1e-16) {
+            std::cerr << "Norm of v is not unit!\n";
+            for (auto elem : v) elem /= elem / vecNrm(v);
+        }
+        Vmp1.push_back(v);
+
+        for (int j = 0; j < m; ++j) {
+            std::vector<double> wj = mulMatrixVector(A, v);
+            for (int i = 0; i < j; ++i) {
+                double num = std::inner_product(wj.begin(), wj.end(), v.begin(), 0);
+                H_bar[i][j] = num;
+            }
+
+            for (int i = 0; i < j; ++i) {
+                wj[i] = wj[i] - H_bar[i][j] * v[i];
+            }
+
+            if (vecNrm(wj) > 1e-16) {
+                H_bar[j + 1][j] = vecNrm(wj);
+                for (auto elem : v) elem /= elem / H_bar[j + 1][j];
+                Vmp1.push_back(v);
+            } else {
+                std::cout << "Norm of wj almost zero, no new direction!\n";
+                break;
+            }
+        }
+        
+        return H_bar;
 }
 
 inline SolverResult jacobi(const std::vector<std::vector<double>>& A, const std::vector<double>& b,
