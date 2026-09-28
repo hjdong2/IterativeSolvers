@@ -2,7 +2,49 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <Eigen/Dense>
 #include "Solver.h"
+
+Eigen::MatrixXd classicGramSchmist(const Eigen::MatrixXd& A) {
+    int m = A.rows(), n = A.cols();
+    Eigen::MatrixXd Q(m, n);
+    Eigen::MatrixXd R = Eigen::MatrixXd::Zero(n, n);
+
+    for (int j = 0; j < n; ++j) {
+        Eigen::VectorXd q = A.col(j);
+        Eigen::VectorXd temp = Eigen::VectorXd::Zero(m);
+        for (int i = 0; i < j; ++i) {
+            double rij = q.dot(Q.col(i));
+            temp += rij * Q.col(i);
+        }
+        q = q - temp;
+        R(j, j) = q.norm();
+        q /= R(j, j);
+        Q.col(j) = q;        
+    }
+
+    return Q;
+}
+
+Eigen::MatrixXd modifiedGramSchmidt(const Eigen::MatrixXd& A) {
+    int m = A.rows(), n = A.cols();
+    Eigen::MatrixXd Q(m, n);
+    Eigen::MatrixXd R = Eigen::MatrixXd::Zero(n, n);
+
+    for (int j = 0; j < n; ++j) {
+        Eigen::VectorXd q = A.col(j);
+        for (int i = 0; i < j; ++i) {
+            double rij = q.dot(Q.col(i));
+            q = q - rij * Q.col(i);
+        }
+        R(j, j) = q.norm();
+        q /= R(j, j);
+        Q.col(j) = q;
+    }
+
+    return Q;
+}
+
 
 int main() {
     std::vector<std::vector<double>> A = {{4.0, 1.0}, {1.0, 3.0}};
@@ -35,6 +77,10 @@ int main() {
     for (int i = 0; i < info_gs.it; ++i) {
         std::cout << info_gs.history[i] << '\n';
     }
+
+    Eigen::MatrixXd A_eig(2, 2);
+    A_eig << 1, 2, 3, 4;
+    std::cout << A_eig << '\n';
 
     return 0;
 }
