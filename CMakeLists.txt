@@ -1,0 +1,17 @@
+
+cmake_minimum_required(VERSION 3.20)
+project(IterativeSolvers LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package(Eigen3 REQUIRED NO_MODULE)
+
+add_library(itsolvers INTERFACE)
+target_include_directories(itsolvers INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(itsolvers INTERFACE Eigen3::Eigen)
+
+add_executable(gram_schmidt_stability examples/gram_schmidt_stability.cpp)
+target_link_libraries(gram_schmidt_stability PRIVATE itsolvers)
+target_compile_options(gram_schmidt_stability PRIVATE -Wall -Wextra -Wpedantic)
