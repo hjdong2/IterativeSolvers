@@ -15,3 +15,7 @@ target_link_libraries(itsolvers INTERFACE Eigen3::Eigen)
 add_executable(gram_schmidt_stability examples/gram_schmidt_stability.cpp)
 target_link_libraries(gram_schmidt_stability PRIVATE itsolvers)
 target_compile_options(gram_schmidt_stability PRIVATE -Wall -Wextra -Wpedantic)
+
+add_executable(jacobi_gs_demo examples/jacobi_gs_demo.cpp)
+target_link_libraries(jacobi_gs_demo PRIVATE itsolvers)
+target_compile_options(jacobi_gs_demo PRIVATE -Wall -Wextra -Wpedantic)

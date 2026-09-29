@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <functional>
 #include <utility>
+#include <Eigen/Dense>
+
+namespace itsolvers {
 
 struct SolverOptions{
     double reltol=1e-8;
@@ -21,174 +24,116 @@ struct SolverResult{
     std::vector<double> history;
 };
 
-inline double resNrm(const std::vector<std::vector<double>>& A, const std::vector<double>& b, const std::vector<double>& x)  {
-    int n = A.size();
-    std::vector<double> r(n);
-    for (int i = 0; i < n; ++i) {
-        double num = 0.0;
-        for (int j = 0; j < n; ++j) {
-            num += A[i][j] * x[j];
-        }
-        r[i] = b[i] - num;
+inline SolverResult jacobi(const Eigen::MatrixXd& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, const SolverOptions& opts) {
+    Eigen::Index n = A.rows();
+
+    double reltol = opts.reltol;
+    int maxit = opts.maxit;
+
+    double res = {0.0};
+    int nit = maxit;
+    bool isconverged = false;
+    std::vector<double> history;
+
+    SolverResult info = {res, nit, isconverged, history};
+
+    Eigen::VectorXd x_new = Eigen::VectorXd::Zero(n);
+    double bnrm = b.norm();
+    if (std::abs(bnrm) < 1e-16) {
+        x.setZero();
+        info.isconverged = true;
+        info.it = 0;
+        info.history.push_back(0.0);
+        return info;
     }
 
-    return std::sqrt(std::inner_product(r.begin(), r.end(), r.begin(), 0.0));
-
-}
-
-inline double vecNrm(const std::vector<double>& v) {
-    return std::sqrt(std::inner_product(v.begin(), v.end(), v.begin(), 0.0));
-}
-
-std::vector<double> mulMatrixVector(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec) {
-    int rows = matrix.size(), cols = matrix[0].size();
-    int xsz = vec.size();
-    if (cols != xsz) {
-        std::cerr << "Matrix column size and vector size mismatch!\n"; 
-    }
-
-    std::vector<double> b(rows, 0.0);
-    for (int row = 0; row < rows; ++row) {
-        double num = 0.0;
-        for (int col = 0; col < cols; ++col) {
-            num += matrix[row][col] * vec[col];
+    for (Eigen::Index it = 0; it < maxit; ++it) {
+        for (Eigen::Index i = 0; i < n; ++i) {
+            double num = 0.0;
+            for (Eigen::Index j = 0; j < n; ++j) {
+                if (i != j) num += A(i, j) * x(j);
+            }
+            if (std::abs(A(i, i)) <= 1e-16) {
+                info.isconverged = false;
+                return info;
+            }
+            x_new(i) = (-num + b(i)) / A(i, i);
         }
-        b[row] = num;
-    }
+        swap(x, x_new);
 
-    return b;
-}
+        double r = (b - A * x).norm();
+        info.history.push_back(r / bnrm);
 
-inline std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> Aronoldi(const std::vector<std::vector<double>>& A, std::vector<double>& v, const int& m) {
-        std::vector<std::vector<double>> Hbar(m + 1, std::vector<double>(m, 0.0));
-        int rows = A.size(), cols = A[0].size();
-        std::vector<std::vector<double>>  Vmp1(cols, std::vector<double>(m, 0.0));
-        if (abs(vecNrm(v) - 1.0) > 1e-16) {
-            std::cerr << "Norm of v is not unit!\n";
-            for (auto elem : v) elem /= elem / vecNrm(v);
-        }
-        Vmp1.push_back(v);
-
-        for (int j = 0; j < m; ++j) {
-            std::vector<double> wj = mulMatrixVector(A, v);
-            for (int i = 0; i < j; ++i) {
-                double num = std::inner_product(wj.begin(), wj.end(), v.begin(), 0);
-                Hbar[i][j] = num;
-            }
-
-            for (int i = 0; i < j; ++i) {
-                wj[i] = wj[i] - Hbar[i][j] * v[i];
-            }
-
-            if (vecNrm(wj) > 1e-16) {
-                Hbar[j + 1][j] = vecNrm(wj);
-                for (auto elem : v) elem /= elem / Hbar[j + 1][j];
-                Vmp1.push_back(v);
-            } else {
-                std::cout << "Norm of wj almost zero, no new direction!\n";
-                break;
-            }
-        }
-        
-        // return orthonormal basis and Hessenberg matrices, need to test first
-        return {Vmp1, Hbar};
-}
-
-inline SolverResult jacobi(const std::vector<std::vector<double>>& A, const std::vector<double>& b,
-        std::vector<double>& x, const SolverOptions& opts) {
-            double reltol = opts.reltol;
-            int maxit = opts.maxit;
-            
-            int n = A.size();
-            double res = {0.0};
-            int nit = maxit;
-            bool isconverged = false;
-            std::vector<double> history;
-
-            SolverResult info = {res, nit, isconverged, history};
-
-            std::vector<double> x_new(n);
-            double b_nrm = std::sqrt(std::inner_product(b.begin(), b.end(), b.begin(), 0.0));
-            for (int it = 0; it < maxit; ++it) {
-                for (int i = 0; i < n; ++i) {
-                    double num = 0.0;
-                    for (int j = 0; j < n; ++j) {
-                        if (i != j) num += A[i][j] * x[j];
-                    }
-                    if (std::abs(A[i][i]) <= 1e-16) {
-                        std::cerr << "Diagonal matrix contains 0!\n";
-                        info.isconverged = false;
-                        return info;
-                    }
-                    x_new[i] = (-num + b[i]) / A[i][i];
-                }
-                
-                swap(x, x_new);
-
-                double r = resNrm(A, b, x);
-                info.history.push_back(std::abs(r / b_nrm));
-                
-                if (std::abs(b_nrm) > 1e-16 && r / b_nrm <= reltol) {
-                    info.isconverged = true;
-                    info.it = it;
-                    info.res = r;
-                    return info;
-                }
-            }
-
+        if (r / bnrm <= reltol) {
+            info.isconverged = true;
+            info.it = it + 1;
+            info.res = r / bnrm;
             return info;
         }
+    }
 
-inline SolverResult GaussSeidel(const std::vector<std::vector<double>>& A, const std::vector<double>& b, 
-    std::vector<double>& x, const SolverOptions& opts) {
-        double reltol = opts.reltol;
-        int maxit = opts.maxit;
-        
-        int n = A.size();
-        std::vector<double> history;
-        SolverResult info = {0.0, 0, false, history};
+    info.isconverged = false;
+    info.it = maxit;
+    info.res = info.history.back();
 
-        std::vector<double> x_new(n, 0.0);
-        double b_nrm = std::sqrt(std::inner_product(b.begin(), b.end(), b.begin(), 0.0));
-        for (int it = 0; it < maxit; ++it) {
-            for (int i = 0; i < n; ++i) {
-                double num = 0.0;
-                for (int j = 0; j <= i - 1; ++j) {
-                    num += A[i][j] * x_new[j];
-                }
+    return info;
 
-                for (int j = i + 1; j < n; ++j) {
-                    num += A[i][j] * x[j];
-                }
+}
 
-                if (std::abs(A[i][i]) < 1e-16) {
-                    std::cerr << "Diagonal value almost 0!\n";
-                    info.isconverged = false;
-                    return info;
-                }
+inline SolverResult GaussSeidel(const Eigen::MatrixXd& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, const SolverOptions& opts) {
+    double reltol = opts.reltol;
+    int maxit = opts.maxit;
 
-                x_new[i] = (b[i] - num) / A[i][i];
+    Eigen::Index n = A.rows();
+    std::vector<double> history;
+    SolverResult info = {0.0, maxit, false, history};
 
+    Eigen::VectorXd x_new = Eigen::VectorXd::Zero(n);
+    double bnrm = b.norm();
+    if (std::abs(bnrm) < 1e-16) {
+        x.setZero();
+        info.isconverged = true;
+        info.it = 0;
+        info.history.push_back(0.0);
+        return info;
+    }
+
+    for (Eigen::Index it = 0; it < maxit; ++it) {
+        for (Eigen::Index i = 0; i < n; ++i) {
+            double num = 0.0;
+            for (Eigen::Index j = 0; j <= i - 1; ++j) {
+                num += A(i, j) * x_new(j);
             }
-            swap(x, x_new);
 
-            double r = resNrm(A, b, x);
-            info.history.push_back(std::abs(r / b_nrm));
+            for (Eigen::Index j = i + 1; j < n; ++j) {
+                num += A(i, j) * x(j);
+            }
 
-            if (std::abs(b_nrm) > 1e-16 && std::abs(r / b_nrm) <= reltol) {
-                info.isconverged = true;
-                info.it = it;
-                info.res = r;
+            if (std::abs(A(i, i)) < 1e-16) {
+                info.isconverged = false;
                 return info;
             }
 
+            x_new(i) = (b(i) - num) / A(i, i);
         }
+        swap(x, x_new);
 
-        return info;
+        double r = (b - A * x).norm();
+        info.history.push_back(r / bnrm);
+
+        if ((r / bnrm) <= reltol) {
+            info.isconverged = true;
+            info.it = it + 1;
+            info.res = r / bnrm;
+            return info;
+        }
+    }
+
+    info.isconverged = false;
+    info.it = maxit;
+    info.res = info.history.back();
+
+    return info;
 }
 
-// inline SolverResult GMRES(const std::vector<std::vector<double>>& A, const std::vector<double>& b, 
-//     std::vector<double>& x, const SolverOptions& opts) {
-//     // need to think about this agian, Km subspace and Hessenberg matrix
-//     // QR factorization ? Given rotations? Restart?
-// }
+}
