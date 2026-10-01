@@ -1,26 +1,10 @@
 
 #include <iostream>
 #include <itsolvers/Solver.h>
+#include <tests/test_helpers.h>
 
 int failures = 0;
 int checks = 0;
-
-void check(bool ok, const char* name) {
-    ++checks;
-    if (!ok) {
-        ++failures;
-        std::cout << "FAILED: " << name << '\n';
-    }
-}
-
-void checkNear(double actual, double expected, double tol, const char* name) {
-    ++checks;
-    if (std::abs(actual - expected) > tol) {
-        ++failures;
-        std::cout << "FAILED: " << name << '\n';
-    }
-}
-
 
 // ================= test matrices ===================
 Eigen::MatrixXd makeTridiag(int n) {

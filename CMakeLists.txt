@@ -25,3 +25,8 @@ add_executable(test_solvers tests/test_solvers.cpp)
 target_link_libraries(test_solvers PRIVATE itsolvers)
 target_compile_options(test_solvers PRIVATE -Wall -Wextra -Wpedantic)
 add_test(NAME solvers COMMAND test_solvers)
+
+add_executable(test_arnoldi tests/test_arnoldi.cpp)
+target_link_libraries(test_arnoldi PRIVATE itsolvers)
+target_compile_options(test_arnoldi PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME solvers COMMAND test_arnoldi)
