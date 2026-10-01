@@ -36,15 +36,8 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
             Hmbar(j + 1, j) = hjp1j;
             Vmp1.col(j + 1) = wj / hjp1j;
         } else {
-            Eigen::Index k = j + 1;
-            Eigen::MatrixXd Vk = Eigen::MatrixXd Zero(n, k);
-            Egien::MatrixXd Hk = Eigen::MatrixXd Zero(k, k);
-            for (Eigen::Index col = 0; col < k; ++col) {
-                Vk.col(col) = Vmp1.col(col);
-                Hk.col(col) = Hmbar.col(col);
-            }
-            ArnoldiResult res = {Vk, Hk, k};
-            return res;
+            Eigen::Index k = j;
+            break;
         }
     }
 
