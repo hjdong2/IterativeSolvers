@@ -17,3 +17,4 @@ void checkNear(double actual, double expected, double tol, const char* name) {
         std::cout << "FAILED: " << name << '\n';
     }
 }
+

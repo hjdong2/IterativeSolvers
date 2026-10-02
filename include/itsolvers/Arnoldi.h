@@ -18,7 +18,7 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
     double tol = 1e-12;
 
     if (r0.norm() == 0.0) {
-        ArnoldiResult res = {Eigen::MatrixXd, Eigen::MatrixXd, 0};
+        ArnoldiResult res = {Vmp1, Hmbar, 0};
         return res;
     }
     Eigen::VectorXd v0 = r0 / r0.norm();
@@ -32,12 +32,13 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
             Hmbar(i, j) = hij;
         }
         hjp1j = wj.norm();
-        if (hjp1j > tol * wnrm 1e-14) {
+        if (hjp1j > tol * wnrm) {
             Hmbar(j + 1, j) = hjp1j;
             Vmp1.col(j + 1) = wj / hjp1j;
         } else {
             Eigen::Index k = j;
-            break;
+            ArnoldiResult res = {Vmp1, Hmbar, k};
+            return res;
         }
     }
 
