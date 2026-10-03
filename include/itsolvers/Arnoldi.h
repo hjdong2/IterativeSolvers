@@ -12,8 +12,8 @@ struct ArnoldiResult {
 
 inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r0, Eigen::Index m) {
     Eigen::Index n = A.rows();
-    Eigen::MatrixXd Vmp1 = Eigen::MatrixXd Zero(n, m + 1);
-    Eigen::MatrixXd Hmbar = Eigen::MatrixXd Zero(m + 1, m);
+    Eigen::MatrixXd Vmp1 = Eigen::MatrixXd::Zero(n, m + 1);
+    Eigen::MatrixXd Hmbar = Eigen::MatrixXd::Zero(m + 1, m);
 
     double tol = 1e-12;
 
@@ -31,7 +31,7 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
             wj -= hij * Vmp1.col(i);
             Hmbar(i, j) = hij;
         }
-        hjp1j = wj.norm();
+        double hjp1j = wj.norm();
         if (hjp1j > tol * wnrm) {
             Hmbar(j + 1, j) = hjp1j;
             Vmp1.col(j + 1) = wj / hjp1j;

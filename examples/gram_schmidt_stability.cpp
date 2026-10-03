@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <vector>
-#include <Eigen/Dense>
 #include <itsolvers/GramSchmidt.h>
 
 int main() {

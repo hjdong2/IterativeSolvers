@@ -1,32 +1,7 @@
 
 #include <iostream>
 #include <itsolvers/Solver.h>
-#include <tests/test_helpers.h>
-
-int failures = 0;
-int checks = 0;
-
-// ================= test matrices ===================
-Eigen::MatrixXd makeTridiag(int n) {
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n, n);
-    Eigen::VectorXd main_diag = Eigen::VectorXd::Constant(n, 4.0);
-    Eigen::VectorXd sub_diag = Eigen::VectorXd::Constant(n - 1, -1.0);
-
-    A.diagonal(0) = main_diag;
-    A.diagonal(1) = sub_diag;
-    A.diagonal(-1) = sub_diag;
-
-    return A;    
-}
-
-Eigen::MatrixXd make3x3() {
-    Eigen::MatrixXd A(3, 3);
-    A << 1.0, 3.0, 5.0,
-         4.0, 9.5, 8.0,
-         1.0, 4.0, 4.0;
-
-    return A;
-}
+#include "test_helpers.h"
 
 void testGaussSeidelConvergesOnTridiag() {
     Eigen::MatrixXd A = makeTridiag(10);
