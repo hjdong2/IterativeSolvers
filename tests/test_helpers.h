@@ -20,7 +20,7 @@ inline void checkNear(double actual, double expected, double tol, const char* na
         ++failures;
         std::cout << "FAILED: " << name << 
                     "(got " << actual << ", expected " <<
-                    expected << ")\n";
+                    expected << " +/- " << tol << ")\n";
     }
 }
 
