@@ -30,3 +30,8 @@ add_executable(test_arnoldi tests/test_arnoldi.cpp)
 target_link_libraries(test_arnoldi PRIVATE itsolvers)
 target_compile_options(test_arnoldi PRIVATE -Wall -Wextra -Wpedantic)
 add_test(NAME arnoldi COMMAND test_arnoldi)
+
+add_executable(test_gmres tests/test_gmres.cpp)
+target_link_libraries(test_gmres PRIVATE itsolvers)
+target_compile_options(test_gmres PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME gmres COMMAND test_gmres)

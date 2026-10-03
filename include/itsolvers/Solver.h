@@ -8,21 +8,9 @@
 #include <functional>
 #include <utility>
 #include <Eigen/Dense>
+#include "SolverTypes.h"
 
 namespace itsolvers {
-
-struct SolverOptions{
-    double reltol=1e-8;
-    int maxit=10000;
-    double w=1.0;     // for SOR relaxation
-};
-
-struct SolverResult{
-    double res;
-    int it;
-    bool isconverged;
-    std::vector<double> history;
-};
 
 inline SolverResult jacobi(const Eigen::MatrixXd& A, const Eigen::VectorXd& b, Eigen::VectorXd& x, const SolverOptions& opts) {
     Eigen::Index n = A.rows();
