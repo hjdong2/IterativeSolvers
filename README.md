@@ -29,9 +29,23 @@ CGS returns a Q that is not orthogonal at all, while
 MGS can still give 1e-7.
 This is why the Arnoldi algorithm used MGS.
 
-- Jacobi vs. Gauss-Seidel on 10-by-10 tridiagonal matrix
-- 3-by-3 matrix where Jacobi diverged but Gauss-Seidel converges
-- GMRES with Given Rotations
+## Jacobi vs. Gauss-Seidel on 10-by-10 tridiagonal matrix
+### 3-by-3 matrix where Jacobi diverged but Gauss-Seidel converges
+## GMRES with Given Rotations
+
+#Build and run
+## Requirements
+- A C++20 compiler (tested with GCC 17 via MSYS2 UCRT64 on Windows)
+- CMake >= 3.0
+- Eigen3
+- Ninja
+
+### Run the examples
+
+```bash
+./build/gram_schmidt_stability   # CGS vs. MGS loss of orthogonality on Hilbert matrices
+./build/jacobi_gs_demo           # Jacobi vs. Gauss-Seidel on a tridiagonal system
+```
 
 # Possible future extensions
 - GMRES(m) with Restart
