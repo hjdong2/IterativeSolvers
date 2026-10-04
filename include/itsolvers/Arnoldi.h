@@ -43,7 +43,7 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
     Eigen::VectorXd v0 = r0 / r0.norm();
     Vmp1.col(0) = v0;
     for (Eigen::Index j = 0; j < m; ++j) {
-        bool hadNewVec = arnoldiStep(A, Vmp1, Hmbar, j);
+        bool hasNewVec = arnoldiStep(A, Vmp1, Hmbar, j);
         if (!hasNewVec) {
             return {Vmp1, Hmbar, j + 1};
         }
