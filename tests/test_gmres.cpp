@@ -57,6 +57,7 @@ void testGmresBreakdown() {
     Eigen::VectorXd xext = A.partialPivLu().solve(b);
 
     checkNear((x - xext).norm(), 0.0, 1e-10, "GMRES Breakdown");
+    check(info.it == 3, "GMRES breakdown");
 
 }
 
