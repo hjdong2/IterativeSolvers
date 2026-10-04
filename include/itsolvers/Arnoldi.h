@@ -10,12 +10,31 @@ struct ArnoldiResult {
     Eigen::Index k;
 };
 
+inline bool arnoldiStep(const Eigen::MatrixXd& A, Eigen::MatrixXd& V, Eigen::MatrixXd& H, Eigen::Index j) {
+    Eigen::VectorXd wj = A * V.col(j);
+    double wnrm = wj.norm();
+    double tol = 1e-12;
+
+    for (Eigen::Index i = 0; i <= j; ++i) {
+        double hij = wj.dot(V.col(i));
+        wj -= hij * V.col(i);
+        H(i, j) = hij;
+    }
+
+    double hjp1j = wj.norm();
+    if (hjp1j > tol * wnrm) {
+        H(j + 1, j) = hjp1j;
+        V.col(j + 1) = wj / hjp1j;
+        return true;
+    }
+
+    return false;
+}
+
 inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r0, Eigen::Index m) {
     Eigen::Index n = A.rows();
     Eigen::MatrixXd Vmp1 = Eigen::MatrixXd::Zero(n, m + 1);
     Eigen::MatrixXd Hmbar = Eigen::MatrixXd::Zero(m + 1, m);
-
-    double tol = 1e-12;
 
     if (r0.norm() == 0.0) {
         ArnoldiResult res = {Vmp1, Hmbar, 0};
@@ -24,21 +43,9 @@ inline ArnoldiResult arnoldi (const Eigen::MatrixXd& A, const Eigen::VectorXd& r
     Eigen::VectorXd v0 = r0 / r0.norm();
     Vmp1.col(0) = v0;
     for (Eigen::Index j = 0; j < m; ++j) {
-        Eigen::VectorXd wj = A * Vmp1.col(j);
-        double wnrm = wj.norm();
-        for (Eigen::Index i = 0; i <= j; ++i){
-            double hij = wj.dot(Vmp1.col(i));
-            wj -= hij * Vmp1.col(i);
-            Hmbar(i, j) = hij;
-        }
-        double hjp1j = wj.norm();
-        if (hjp1j > tol * wnrm) {
-            Hmbar(j + 1, j) = hjp1j;
-            Vmp1.col(j + 1) = wj / hjp1j;
-        } else {
-            Eigen::Index k = j + 1;
-            ArnoldiResult res = {Vmp1, Hmbar, k};
-            return res;
+        bool hadNewVec = arnoldiStep(A, Vmp1, Hmbar, j);
+        if (!hasNewVec) {
+            return {Vmp1, Hmbar, j + 1};
         }
     }
 
