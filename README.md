@@ -38,7 +38,7 @@ Produced by `jacobi_gs_demo`
 The matrix: 10x10 tridiagonal: 4 on the diagonal, -1 on the off-diagonals, 
 b = (1, 2, ..., 10), and x_0 = 0. 
 
-|    Method    |    Iterations    |    Final relative residual    |    ||x - x_exact||    |
+|    Method    |    Iterations    |    Final relative residual    |      x - x_exact      |
 |--------------|------------------|-------------------------------|-----------------------|
 |    Jacobi    |      25          |         8.8e-09               |      8.3e-08          |
 | Gauss-Seidel |      15          |         9.0e-09               |      7.0e-08          |
