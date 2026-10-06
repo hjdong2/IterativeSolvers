@@ -20,6 +20,10 @@ add_executable(jacobi_gs_demo examples/jacobi_gs_demo.cpp)
 target_link_libraries(jacobi_gs_demo PRIVATE itsolvers)
 target_compile_options(jacobi_gs_demo PRIVATE -Wall -Wextra -Wpedantic)
 
+add_executable(gmres_demo examples/gmres_demo.cpp)
+target_link_libraries(gmres_demo PRIVATE itsolvers)
+target_compile_options(gmres_demo PRIVATE -Wall -Wextra -Wpedantic)
+
 enable_testing()
 add_executable(test_solvers tests/test_solvers.cpp)
 target_link_libraries(test_solvers PRIVATE itsolvers)
